@@ -1,0 +1,32 @@
+model {
+  for (i in 1:N){
+    by[i] ~ dnorm(mu[i], 1 / (sy[i] * sy[i]))
+    mu[i] = inprod(bx0[i, 1:K], theta) + alpha[i]
+    bx[i,1:K] ~ dmnorm(bx0[i,1:K], Tx[1:K, ((i-1)*K+1):(i*K)])
+    
+    kappa[i] = (rho[i]^2 / (1 + K*rho[i]^2))
+    bx0[i,1:K] ~ dmnorm(mx + sx0 * rho[i] * alpha[i] / (phi[i] * tau), A - kappa[i] * B)
+    rho[i] ~ dunif(-1, 1)
+    alpha[i] ~ dnorm(0, 1 / (tau * tau * phi[i] * phi[i]))
+    phi[i] = a[i] / sqrt(b[i])
+    a[i] ~ dnorm(0, 1)I(0, )
+    b[i] ~ dgamma(0.5, 0.5)
+  }
+  
+  c ~ dnorm(0, 1)I(0, )
+  d ~ dgamma(0.5, 0.5)
+  tau = c / sqrt(d)
+  
+  mx ~ dmnorm(rep(0, K), R[,])
+  
+  for (k in 1:K){
+    vx0[k] ~ dnorm(0, 1)I(0, )
+    sx0[k] = sqrt(vx0[k])
+    theta[k] ~ dunif(-10, 10)
+    for (j in 1:K){
+      A[j, k] = ifelse(j==k, 1/vx0[j], 0)
+      B[j, k] = 1 / (sx0[j] * sx0[k])
+    }
+  }
+  
+}
