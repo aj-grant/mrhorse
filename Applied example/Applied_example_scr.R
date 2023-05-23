@@ -45,15 +45,6 @@ str_fm = format_data(str_dat, snp_col = "SNP", beta_col = "beta_str", se_col = "
                      type = "outcome")
 
 ########################################################################################################################
-#Birthweight from UKBB
-########################################################################################################################
-bw_all = read.table(file = 'bw_sig_out.txt', colClasses = c("character", "numeric", "numeric", "numeric"), header = FALSE)
-names(bw_all) = c("variant", "beta_bw", "se_bw", "p_bw")
-bw_all = inner_join(var_rsid_map, bw_all, by = "variant")
-bw_all$EAF = (bw_all$EA==bw_all$minor_allele)*bw_all$MAF + (bw_all$EA!=bw_all$minor_allele)*(1-bw_all$MAF)
-bw_all = bw_all[, c("chr", "pos", "SNP", "beta_bw", "se_bw", "p_bw", "EA", "NEA", "EAF")]
-
-########################################################################################################################
 #Birthweight from Horikoshi
 ########################################################################################################################
 bw_all = read.table(file = "bw_sig_out.txt", colClasses = c("character", "character", "numeric", "character",
