@@ -379,3 +379,21 @@ tc_ast_cause = mr_cause_run(Xgwas = data.frame("SNP" = tc_all$SNP, "beta" = tc_a
                             Ygwas = data.frame("SNP" = ast_dat$SNP, "beta" = ast_dat$beta_ast, "se" = ast_dat$se_ast,
                                                "EA" = ast_dat$EA_ast, "NEA" = ast_dat$NEA_ast),
                             sig_snps = tc_sig)
+
+########################################################################################################################
+#Second applied example
+########################################################################################################################
+ad_dat = read.csv('beta_se_all.csv')
+mvmrob = mr_mvinput(bx = cbind(ad_dat$hill_beta, ad_dat$okbay_beta, ad_dat$ukbb_beta),
+                    bxse = cbind(ad_dat$hill_se, ad_dat$okbay_se, ad_dat$ukbb_se),
+                    by = ad_dat$lambert_beta, byse = ad_dat$lambert_se, exposure = c("Int", "Edu", "Inc"))
+set.seed(20230816)
+ad_ivw = mr_mvivw(mvmrob, nx = c(248482, 293723, 361194))
+set.seed(20230816)
+ad_median = mr_mvmedian(mvmrob)
+set.seed(20230816)
+ad_cml = mr_mvcML(mvmrob, n = 54162, DP = FALSE)
+set.seed(20230816)
+ad_cml_dp = mr_mvcML(mvmrob, n = 54162, DP = TRUE)
+set.seed(20230816)
+ad_horse = mvmr_horse(mvmrob, no_ini = 3, variable.names = "theta")
