@@ -7,7 +7,8 @@ mr_horse_model = function() {
     bx[i] ~ dnorm(bx0[i], 1 / (sx[i] * sx[i]))
     
     bx0[i] ~ dnorm(mx0 + (sqrt(vx0)/(tau * phi[i])) * rho[i] * alpha[i], 1 / ((1 - rho[i]^2) * vx0))
-    rho[i] ~ dunif(-1, 1)
+    r[i] ~ dbeta(10, 10);T(, 1)
+    rho[i] = 2*r[i] -1
     
     alpha[i] ~ dnorm(0, 1 / (tau * tau * phi[i] * phi[i]))
     phi[i] = a[i] / sqrt(b[i])
@@ -33,7 +34,8 @@ mvmr_horse_model = function() {
     
     kappa[i] = (rho[i]^2 / (1 + K*rho[i]^2))
     bx0[i,1:K] ~ dmnorm(mx + sx0 * rho[i] * alpha[i] / (phi[i] * tau), A - kappa[i] * B)
-    rho[i] ~ dunif(-1, 1)
+    r[i] ~ dbeta(10, 10);T(, 1)
+    rho[i] = 2*r[i] -1
     alpha[i] ~ dnorm(0, 1 / (tau * tau * phi[i] * phi[i]))
     phi[i] = a[i] / sqrt(b[i])
     a[i] ~ dnorm(0, 1);T(0, )
