@@ -53,7 +53,17 @@ sim_res = function(D, p, n, no_ini, variable.names){
   mrest_cml = mr_cML(mrob, n = n, DP = FALSE)
   mrest_cml_DP = mr_cML(mrob, n = n)
   
-  mrjags = jags.model(file = "mrhorse-cor-model.txt",
+  c(mrest_ivw$Estimate, mrest_ivw$StdError, mrest_ivw$CILower, mrest_ivw$CIUpper,
+    mrest_ivw_oracle$Estimate, mrest_ivw_oracle$StdError, mrest_ivw_oracle$CILower, mrest_ivw_oracle$CIUpper,
+    mrest_median$Estimate, mrest_median$StdError, mrest_median$CILower, mrest_median$CIUpper,
+    A$beta, A$se_beta, A$beta - qnorm(0.975, 0, 1) * A$se_beta, A$beta + qnorm(0.975, 0, 1) * A$se_beta,
+    mrest_cml$Estimate, mrest_cml$StdError, mrest_cml$CILower, mrest_cml$CIUpper,
+    mrest_cml_DP$Estimate, mrest_cml_DP$StdError, mrest_cml_DP$CILower, mrest_cml_DP$CIUpper
+  )
+}
+
+sim_res_horse = function(D, p, n, no_ini, variable.names){
+  mrjags = jags.model(file = "mrbayes-cor-model.txt",
                       data = list(by = D$byhat, bx = D$bxhat, sy = D$seby, sx = D$sebx, N = p),
                       n.chains = no_ini,
                       quiet = TRUE)
@@ -63,13 +73,7 @@ sim_res = function(D, p, n, no_ini, variable.names){
                               n.iter=10000,
                               quiet = TRUE, progress.bar = "none")
   
-  c(mrest_ivw$Estimate, mrest_ivw$StdError, mrest_ivw$CILower, mrest_ivw$CIUpper,
-    mrest_ivw_oracle$Estimate, mrest_ivw_oracle$StdError, mrest_ivw_oracle$CILower, mrest_ivw_oracle$CIUpper,
-    mrest_median$Estimate, mrest_median$StdError, mrest_median$CILower, mrest_median$CIUpper,
-    A$beta, A$se_beta, A$beta - qnorm(0.975, 0, 1) * A$se_beta, A$beta + qnorm(0.975, 0, 1) * A$se_beta,
-    mrest_cml$Estimate, mrest_cml$StdError, mrest_cml$CILower, mrest_cml$CIUpper,
-    mrest_cml_DP$Estimate, mrest_cml_DP$StdError, mrest_cml_DP$CILower, mrest_cml_DP$CIUpper,
-    summary(mrjags.coda[, "theta"])$statistics[1], summary(mrjags.coda[, "theta"])$statistics[2],
+  c(summary(mrjags.coda[, "theta"])$statistics[1], summary(mrjags.coda[, "theta"])$statistics[2],
     summary(mrjags.coda[, "theta"])$quantiles[1], summary(mrjags.coda[, "theta"])$quantiles[5]
   )
 }
@@ -81,7 +85,6 @@ clusterEvalQ(cl, library(BWMR, lib.loc = libs))
 clusterEvalQ(cl, library(tidyverse, lib.loc = libs))
 clusterEvalQ(cl, library(rjags, lib.loc = libs))
 
-tic()
 M = 1000
 clusterSetRNGStream(cl, 20220305)
 p = 20
@@ -154,7 +157,7 @@ D_60_null_dir = parLapply(cl, 1:M, function(i){
 
 no_ini = 3
 variable.names = "theta"
-clusterExport(cl, c('M', 'no_ini', 'variable.names', 'sim_res'))
+clusterExport(cl, c('M', 'no_ini', 'variable.names', 'sim_res', 'sim_res_horse'))
 clusterExport(cl, c('D_20', 'D_20_null', 'D_20_dir', 'D_20_null_dir', 'D_40', 'D_40_null', 'D_40_dir', 'D_40_null_dir',
                     'D_60', 'D_60_null', 'D_60_dir', 'D_60_null_dir'))
 
@@ -228,6 +231,78 @@ clusterSetRNGStream(cl, 20220306)
 R_60_null_dir = parSapply(cl, 1:M, function(i){
   D = D_60_null_dir[[i]]
   sim_res(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_horse = parSapply(cl, 1:M, function(i){
+  D = D_20[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_null_horse = parSapply(cl, 1:M, function(i){
+  D = D_20_null[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_20_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_null_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_20_null_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_horse = parSapply(cl, 1:M, function(i){
+  D = D_40[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_null_horse = parSapply(cl, 1:M, function(i){
+  D = D_40_null[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_40_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_null_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_40_null_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_horse = parSapply(cl, 1:M, function(i){
+  D = D_60[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_null_horse = parSapply(cl, 1:M, function(i){
+  D = D_60_null[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_60_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_null_dir_horse = parSapply(cl, 1:M, function(i){
+  D = D_60_null_dir[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
 })
 
 stopCluster(cl)
