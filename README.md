@@ -64,7 +64,7 @@ where `betaX` is replaced by the K columns `betaX1`, `betaX2`, ..., and `betaXse
 
 ## Examples
 ### Univariable MR
-The csv file data_ex.csv contains a dataframe containing simulated genetic association estimates between 100 genetic
+The csv file dat_ex.csv contains a dataframe containing simulated genetic association estimates between 100 genetic
 instruments and an exposure and outcome, as well as their corresponding standard errors. This is taken from the first
 replication of the first simulation study (that is, where 20% of variants are pleiotropic, and pleiotropy is balanced).
 The dataset can be analysed as follows.
@@ -75,13 +75,13 @@ set.seed(20230531)
 MREx = mr_horse(data_ex)
 MREx$MR_Estimate
   Estimate    SD 2.5% quantile 97.5% quantile Rhat
-1    0.097 0.018          0.06          0.134    1
+1    0.097 0.018         0.063          0.132    1
 traceplot(MREx$MR_Coda[, "theta"])
 densplot(MREx$MR_Coda[, "theta"])
 ```
 
 ### Multivariable MR
-The csv file data_mv_ex.csv contains a dataframe containing simulated genetic association estimates between 100 genetic
+The csv file dat_mv_ex.csv contains a dataframe containing simulated genetic association estimates between 100 genetic
 instruments and two exposures and an outcome, as well as their corresponding standard errors. This is taken from the first
 replication of the multivariable simulation study (that is, where 20% of variants are pleiotropic, and pleiotropy is balanced).
 The dataset can be analysed as follows.
@@ -92,8 +92,8 @@ set.seed(20230531)
 MVMREx = mvmr_horse(data_mv_ex)
 MVMREx$MR_Estimate
   Parameter Estimate    SD 2.5% quantile 97.5% quantile  Rhat
-1  theta[1]    0.100 0.018         0.066          0.134 1.000
-2  theta[2]    0.104 0.018         0.071          0.140 1.001
+1  theta[1]    0.100 0.019         0.065          0.137 1.000
+2  theta[2]    0.105 0.018         0.069          0.139 1.001
 traceplot(MVMREx$MR_Coda[, "theta[1]"])
 densplot(MVMREx$MR_Coda[, "theta[1]"])
 ```
