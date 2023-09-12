@@ -55,7 +55,25 @@ sim_res = function(D, p, n, no_ini, variable.names){
   mrest_cml = mr_cML(mrob, n = n, DP = FALSE)
   mrest_cml_DP = mr_cML(mrob, n = n)
   
-  mrjags = jags.model(file = "mrhorse-cor-model.txt",
+  X1 = data.frame("SNPX" = sprintf("SNP_%i", 1:p), "bxhat" = D$bxhat_all, "sebx" = D$se_all, "EAX" = rep("C", p), "OAX" = rep("T", p))
+  X2 = data.frame("SNPY" = sprintf("SNP_%i", 1:p), "byhat" = D$byhat_all, "seby" = D$se_all, "EAY" = rep("C", p), "OAY" = rep("T", p))
+  X0 = gwas_merge(X1, X2, snp_name_cols = c("SNPX", "SNPY"), beta_hat_cols = c("bxhat", "byhat"), se_cols = c("sebx", "seby"),
+                  A1_cols = c("EAX", "EAY"), A2_cols = c("OAX", "OAY"))
+  params = est_cause_params(X0, X0$snp)
+  topvars = sprintf("SNP_%i", 1:p)[D$sig1]
+  mr_cause = cause(X = X0, variants = topvars, param_ests = params, force = TRUE)
+  
+  c(mrest_ivw$Estimate, mrest_ivw$StdError, mrest_ivw$CILower, mrest_ivw$CIUpper,
+    mrest_median$Estimate, mrest_median$StdError, mrest_median$CILower, mrest_median$CIUpper,
+    A$beta, A$se_beta, A$beta - qnorm(0.975, 0, 1) * A$se_beta, A$beta + qnorm(0.975, 0, 1) * A$se_beta,
+    mrest_cml$Estimate, mrest_cml$StdError, mrest_cml$CILower, mrest_cml$CIUpper,
+    mrest_cml_DP$Estimate, mrest_cml_DP$StdError, mrest_cml_DP$CILower, mrest_cml_DP$CIUpper,
+    summary(mr_cause, ci_size = 0.95)[1]$quants[[2]][, 1], 1-pnorm(abs(mr_cause$elpd[3, 5]))
+  )
+}
+
+sim_res_horse = function(D, p, n, no_ini, variable.names){
+  mrjags = jags.model(file = "mrbayes-cor-model.txt",
                       data = list(by = D$byhat_all[D$sig2], bx = D$bxhat_all[D$sig2], sy = D$se_all[D$sig2], sx = D$se_all[D$sig2], N = length(D$sig2)),
                       n.chains = no_ini,
                       quiet = TRUE)
@@ -66,24 +84,11 @@ sim_res = function(D, p, n, no_ini, variable.names){
                               quiet = TRUE, progress.bar = "none")
   
   
-  X1 = data.frame("SNPX" = sprintf("SNP_%i", 1:p), "bxhat" = D$bxhat_all, "sebx" = D$se_all, "EAX" = rep("C", p), "OAX" = rep("T", p))
-  X2 = data.frame("SNPY" = sprintf("SNP_%i", 1:p), "byhat" = D$byhat_all, "seby" = D$se_all, "EAY" = rep("C", p), "OAY" = rep("T", p))
-  X0 = gwas_merge(X1, X2, snp_name_cols = c("SNPX", "SNPY"), beta_hat_cols = c("bxhat", "byhat"), se_cols = c("sebx", "seby"),
-                  A1_cols = c("EAX", "EAY"), A2_cols = c("OAX", "OAY"))
-  params = est_cause_params(X0, X0$snp)
-  topvars = sprintf("SNP_%i", 1:p)[D$sig1]
-  mr_cause = cause(X = X0, variants = topvars, param_ests = params, force = TRUE)
-
-  c(mrest_ivw$Estimate, mrest_ivw$StdError, mrest_ivw$CILower, mrest_ivw$CIUpper,
-    mrest_median$Estimate, mrest_median$StdError, mrest_median$CILower, mrest_median$CIUpper,
-    A$beta, A$se_beta, A$beta - qnorm(0.975, 0, 1) * A$se_beta, A$beta + qnorm(0.975, 0, 1) * A$se_beta,
-    mrest_cml$Estimate, mrest_cml$StdError, mrest_cml$CILower, mrest_cml$CIUpper,
-    mrest_cml_DP$Estimate, mrest_cml_DP$StdError, mrest_cml_DP$CILower, mrest_cml_DP$CIUpper,
-    summary(mr_cause, ci_size = 0.95)[1]$quants[[2]][, 1], 1-pnorm(abs(mr_cause$elpd[3, 5])),
-    summary(mrjags.coda[, "theta"])$statistics[1], summary(mrjags.coda[, "theta"])$statistics[2],
+  c(summary(mrjags.coda[, "theta"])$statistics[1], summary(mrjags.coda[, "theta"])$statistics[2],
     summary(mrjags.coda[, "theta"])$quantiles[1], summary(mrjags.coda[, "theta"])$quantiles[5]
   )
 }
+
 
 cl = makeCluster(16)
 clusterExport(cl, c('libs'))
@@ -135,7 +140,7 @@ D_gwas_null_60 = parLapply(cl, 1:M, function(i){
 save('D_gwas_20', 'D_gwas_40', 'D_gwas_60', 'D_gwas_null_20', 'D_gwas_null_40', 'D_gwas_null_60', file = 'sims_dat_gwas.R')
 no_ini = 3
 variable.names = "theta"
-clusterExport(cl, c('M', 'no_ini', 'variable.names', 'sim_res'))
+clusterExport(cl, c('M', 'no_ini', 'variable.names', 'sim_res', 'sim_res_horse'))
 clusterExport(cl, c('D_gwas_20', 'D_gwas_40', 'D_gwas_60', 'D_gwas_null_20', 'D_gwas_null_40', 'D_gwas_null_60'))
 
 clusterSetRNGStream(cl, 20220617)
@@ -172,5 +177,41 @@ clusterSetRNGStream(cl, 20220617)
 R_gwas_null_60 = parSapply(cl, 1:M, function(i){
   D = D_gwas_null_60[[i]]
   sim_res(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_20_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_20[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_40_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_40[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_60_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_60[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_null_20_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_null_20[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_null_40_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_null_40[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
+})
+
+clusterSetRNGStream(cl, 20220617)
+R_gwas_null_60_horse = parSapply(cl, 1:M, function(i){
+  D = D_gwas_null_60[[i]]
+  sim_res_horse(D, p, n, no_ini, variable.names)
 })
 stopCluster(cl)
