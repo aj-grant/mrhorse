@@ -6,7 +6,9 @@ model {
     
     kappa[i] = (rho[i]^2 / (1 + K*rho[i]^2))
     bx0[i,1:K] ~ dmnorm(mx + sx0 * rho[i] * alpha[i] / (phi[i] * tau), A - kappa[i] * B)
-    rho[i] ~ dunif(-1, 1)
+    r[i] ~ dbeta(10, 10)T(, 1)
+    rho[i] = 2*r[i] -1
+    
     alpha[i] ~ dnorm(0, 1 / (tau * tau * phi[i] * phi[i]))
     phi[i] = a[i] / sqrt(b[i])
     a[i] ~ dnorm(0, 1)I(0, )
@@ -22,7 +24,7 @@ model {
   for (k in 1:K){
     vx0[k] ~ dnorm(0, 1)I(0, )
     sx0[k] = sqrt(vx0[k])
-    theta[k] ~ dunif(-10, 10)
+    theta[k] ~ dnorm(0, 1)
     for (j in 1:K){
       A[j, k] = ifelse(j==k, 1/vx0[j], 0)
       B[j, k] = 1 / (sx0[j] * sx0[k])
