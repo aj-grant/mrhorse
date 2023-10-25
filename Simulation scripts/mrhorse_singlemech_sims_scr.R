@@ -232,3 +232,91 @@ R_60_null_dir = parSapply(cl, 1:M, function(i){
 })
 
 stopCluster(cl)
+
+#MR-Cue
+sim_res_cue = function(D){
+  mrest_cue = MRCUEIndep(gammah = D$bxhat, Gammah = D$byhat, se1 = D$sebx, se2 = D$seby, rho = 0)
+  c(mrest_cue$beta.hat, mrest_cue$beta.se, mrest_cue$beta.hat - qnorm(0.975, 0, 1)*mrest_cue$beta.se,
+    mrest_cue$beta.hat + qnorm(0.975, 0, 1)*mrest_cue$beta.se)
+}
+
+cl = makeCluster(8)
+clusterEvalQ(cl, library(MR.CUE))
+
+clusterExport(cl, c('M', 'sim_res_cue'))
+clusterExport(cl, c('D_20', 'D_20_null', 'D_20_dir', 'D_20_null_dir', 'D_40', 'D_40_null', 'D_40_dir', 'D_40_null_dir',
+                    'D_60', 'D_60_null', 'D_60_dir', 'D_60_null_dir'))
+
+clusterSetRNGStream(cl, 20220306)
+R_20_cue = parSapply(cl, 1:M, function(i){
+  D = D_20[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_null_cue = parSapply(cl, 1:M, function(i){
+  D = D_20_null[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_20_dir[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_20_null_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_20_null_dir[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_cue = parSapply(cl, 1:M, function(i){
+  D = D_40[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_null_cue = parSapply(cl, 1:M, function(i){
+  D = D_40_null[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_40_dir[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_40_null_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_40_null_dir[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_cue = parSapply(cl, 1:M, function(i){
+  D = D_60[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_null_cue = parSapply(cl, 1:M, function(i){
+  D = D_60_null[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_60_dir[[i]]
+  sim_res_cue(D)
+})
+
+clusterSetRNGStream(cl, 20220306)
+R_60_null_dir_cue = parSapply(cl, 1:M, function(i){
+  D = D_60_null_dir[[i]]
+  sim_res_cue(D)
+})
+
+stopCluster(cl)
