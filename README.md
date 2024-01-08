@@ -1,7 +1,7 @@
 # mr-horse
 Provides the R code to implement the methods described in
 
-Grant, AJ and Burgess, S (2023). [A Bayesian approach to Mendelian randomization using summary statistics in the univariable and multivariable settings with correlated pleiotropy](https://www.biorxiv.org/content/10.1101/2023.05.30.542988v1). *bioRxiv*, doi: https://doi.org/10.1101/2023.05.30.542988
+Grant, AJ and Burgess, S (2024). [A Bayesian approach to Mendelian randomization using summary statistics in the univariable and multivariable settings with correlated pleiotropy](https://doi.org/10.1016/j.ajhg.2023.12.002). *American Journal of Human Genetics*. 111(1):165-180. doi: https://doi.org/10.1016/j.ajhg.2023.12.002
 
 The R code to reproduce the simulation results and applied examples are also provided.
 
