@@ -32,7 +32,7 @@ mvmr_horse_model = function() {
     mu[i] = inprod(bx0[i, 1:K], theta) + alpha[i]
     bx[i,1:K] ~ dmnorm(bx0[i,1:K], Tx[1:K, ((i-1)*K+1):(i*K)])
     
-    kappa[i] = (rho[i]^2 / (1 + K*rho[i]^2))
+    kappa[i] = (-rho[i]^2 / (1 - K*rho[i]^2))
     bx0[i,1:K] ~ dmnorm(mx + sx0 * rho[i] * alpha[i] / (phi[i] * tau), A - kappa[i] * B)
     r[i] ~ dbeta(10, 10);T(, 1)
     rho[i] = 2*r[i] -1
